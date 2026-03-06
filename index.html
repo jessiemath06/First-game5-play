@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <meta name="description" content="© 2025–2026 Jessie Math 捷析老師. All rights reserved.">
+    <meta property="og:title" content="Jessie Math - 精準油耗計算">
+    <meta property="og:description" content="© 2025–2026 Jessie Math 捷析老師. All rights reserved.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="g6-u5-2.png">
+    <meta property="og:image:width" content="1024">
+    <meta property="og:image:height" content="1536">
+    <meta property="og:image:alt" content="Jessie Math 遊戲封面">
+    <link rel="image_src" href="g6-u5-2.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Jessie Math - 精準油耗計算">
+    <meta name="twitter:description" content="© 2025–2026 Jessie Math 捷析老師. All rights reserved.">
+    <meta name="twitter:image" content="g6-u5-2.png">
+
+    <title>Jessie Math - 精準油耗計算</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* ================= 品牌導覽列 (Hero區) ================= */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: radial-gradient(circle, #7d6b56, #2b251e); color: white; overflow-x: hidden; min-height: 100vh; display: flex; flex-direction: column; }
+        
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 20px; background: #ffffff;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-bottom: 2px solid #e0e0e0;
+            position: relative; z-index: 100;
+        }
+        .logo-area { display: flex; align-items: center; gap: 15px; }
+        .logo-img-container {
+            width: 50px; height: 50px; border-radius: 50%;
+            border: 3px solid #e67e22; 
+            display: flex; justify-content: center; align-items: center;
+            background: transparent; padding: 2px;
+        }
+        .logo-img-container img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
+        .logo-text { font-size: 26px; font-weight: 900; color: #34495e; letter-spacing: 0.5px; }
+        
+        .nav-buttons { display: flex; gap: 12px; }
+        .nav-btn {
+            text-decoration: none; padding: 8px 18px; border-radius: 25px;
+            border: 1px solid #dcdde1; color: #2f3640; font-weight: bold;
+            display: flex; align-items: center; gap: 8px; font-size: 15px;
+            transition: all 0.2s; background: #f5f6fa; white-space: nowrap;
+        }
+        .nav-btn:hover { background: #e84118; color: white; border-color: #e84118; }
+        .nav-btn.active { color: #5c6bc0; border-color: #5c6bc0; background-color: #f0f4ff; }
+
+        /* ================= 遊戲共用與風格 ================= */
+        .container { max-width: 900px; margin: 30px auto; text-align: center; position: relative; padding: 0 15px; flex: 1; }
+        h1 { font-size: 36px; margin-bottom: 20px; text-shadow: 2px 2px 4px #000; color: #f39c12; }
+        .btn {
+            padding: 12px 25px; font-size: 18px; font-weight: bold; cursor: pointer;
+            border: none; border-radius: 8px; background: #e67e22; color: white;
+            box-shadow: 0 4px #d35400; transition: 0.1s; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn:active { transform: translateY(4px); box-shadow: 0 0 #d35400; }
+        
+        /* ================= 第一頁：首頁與規則 ================= */
+        #start-screen { background: rgba(0,0,0,0.6); padding: 30px; border-radius: 15px; border: 3px solid #7f8c8d; }
+        .rules { text-align: left; background: #34495e; padding: 20px; border-radius: 10px; margin-bottom: 20px; line-height: 1.6; border-left: 5px solid #e67e22; }
+        .input-group { margin: 20px 0; }
+        #player-name { padding: 12px; font-size: 18px; border-radius: 5px; border: 2px solid #bdc3c7; text-align: center; width: 60%; max-width: 300px;}
+        
+        .leaderboard { margin-top: 30px; background: #2c3e50; border-radius: 10px; padding: 15px; overflow-x: auto; }
+        .leaderboard table { width: 100%; border-collapse: collapse; color: white; min-width: 400px; }
+        .leaderboard th, .leaderboard td { padding: 10px; border-bottom: 1px solid #7f8c8d; }
+        .leaderboard th { color: #f39c12; }
+
+        /* ================= 第二頁：遊戲區 ================= */
+        #game-screen { display: none; }
+        .game-header { display: flex; justify-content: space-between; flex-wrap: wrap; background: #2c3e50; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 2px solid #7f8c8d; gap: 10px;}
+        .game-controls { margin-bottom: 15px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        
+        /* 迷宮沙塵場景 */
+        .maze-area {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" opacity="0.1"><rect width="100" height="100" fill="%23000"/><path d="M0 0h100v100H0z" fill="none" stroke="%23fff" stroke-width="2"/></svg>'), #8e806a;
+            padding: 30px; border-radius: 15px; border: 8px solid #4a4036; position: relative;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
+        }
+        
+        .mission-board { background: #000; color: #0f0; padding: 15px; border-radius: 5px; border: 2px solid #333; font-size: 18px; margin-bottom: 20px; line-height: 1.5; min-height: 200px; display: flex; flex-direction: column; justify-content: center; align-items: center;}
+        
+        /* 🔥 絕美直式排版 CSS 🔥 */
+        .vertical-math-container {
+            display: inline-block;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px 35px;
+            border-radius: 10px;
+            border: 2px solid #e74c3c;
+            margin-top: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        .math-table {
+            border-collapse: collapse;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 26px;
+            color: white;
+            margin: 0 auto;
+            font-weight: bold;
+        }
+        .math-table td { padding: 4px 6px; text-align: right; }
+        .math-divisor { padding-right: 12px !important; color: #3498db; }
+        .math-dividend {
+            border-left: 2px solid white;
+            border-top: 2px solid white;
+            border-top-left-radius: 3px;
+            text-align: left !important;
+            padding-left: 12px !important;
+            color: #f1c40f;
+            letter-spacing: 2px;
+        }
+        .math-q { border-bottom: 2px solid white; text-align: left !important; padding-left: 12px !important; padding-bottom: 6px !important; }
+        .math-r { text-align: left !important; padding-left: 12px !important; border-top: 2px dashed #7f8c8d; padding-top: 6px !important; }
+        .math-dots { text-align: left !important; padding-left: 12px !important; color: #bdc3c7; font-size: 20px;}
+        .wrong-text { color: #e74c3c; text-decoration: line-through; text-decoration-thickness: 3px; }
+
+        /* 互動區 */
+        .interaction-area { display: flex; justify-content: space-around; align-items: center; margin-top: 20px; flex-wrap: wrap; gap: 20px; }
+        
+        /* 🔥 改為 2x2 網格排列 🔥 */
+        .fuel-options { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 15px; 
+            justify-content: center; 
+            width: max-content; 
+            margin: 0 auto; 
+        }
+        
+        .fuel-cell {
+            width: 95px; height: 100px; background: #e74c3c; border-radius: 10px; border: 3px solid #c0392b;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 16px; font-weight: bold;
+            cursor: pointer; box-shadow: 3px 3px 10px rgba(0,0,0,0.5); user-select: none;
+            background-image: linear-gradient(to bottom, #ff7675, #d63031); transition: 0.2s; line-height: 1.4;
+        }
+        .fuel-cell:active { transform: scale(0.95); }
+        .fuel-cell.selected { border: 4px solid #f1c40f; box-shadow: 0 0 15px #f1c40f; }
+
+        .vehicle {
+            width: 200px; height: 150px; background: #7f8c8d; border-radius: 15px 15px 0 0;
+            border: 4px solid #2c3e50; position: relative;
+            display: flex; justify-content: center; align-items: center; flex-direction: column; margin-top: 15px;
+        }
+        .vehicle::after { content: '履帶'; display: block; width: 220px; height: 30px; background: #2c3e50; position: absolute; bottom: -15px; border-radius: 10px; line-height: 30px; font-weight: bold; color: #bdc3c7;}
+        
+        .fuel-tank {
+            width: 100px; height: 80px; background: #34495e; border: 2px dashed #f1c40f; cursor: pointer;
+            border-radius: 10px; display: flex; justify-content: center; align-items: center; text-align: center;
+            color: #f1c40f; font-weight: bold; transition: 0.3s; padding: 5px;
+        }
+        .fuel-tank.drag-over { background: #f1c40f; color: #34495e; border-style: solid; }
+
+        /* ================= 透明計算白板 ================= */
+        #whiteboard-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.3); 
+            z-index: 999; justify-content: center; align-items: center; flex-direction: column;
+        }
+        .wb-header { width: 90%; max-width: 800px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        #canvas { 
+            background: rgba(255, 255, 255, 0.2); 
+            border: 3px dashed #f1c40f; border-radius: 10px; cursor: crosshair; 
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        /* ================= 過關徽章 Modal ================= */
+        #badge-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; text-align: center; padding: 20px;
+        }
+        .badge-img { width: 300px; max-width: 80%; border-radius: 20px; box-shadow: 0 0 30px #f39c12; animation: pop 0.5s ease-out; }
+        @keyframes pop { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+
+        /* ================= Footer 樣式 ================= */
+        footer { padding: 20px; display: flex; justify-content: center; margin-top: auto; }
+        .footer-pill { background: rgba(0,0,0,0.5); border: 1px solid #7f8c8d; border-radius: 50px; padding: 12px 25px; display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; align-items: center; font-size: 14px; color: #bdc3c7; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .footer-left, .footer-right { display: flex; align-items: center; gap: 10px; }
+        .footer-dot { width: 8px; height: 8px; background: #e67e22; border-radius: 50%; }
+        .footer-icon { color: #f39c12; font-size: 16px; }
+
+        /* ================= RWD 與 手機強制轉向設定 ================= */
+        #rotate-warning {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #d35400; color: white; z-index: 9999;
+            flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px;
+        }
+        #rotate-warning span { font-size: 60px; margin-bottom: 20px; display: block; animation: rotatePhone 1.5s infinite ease-in-out; }
+        @keyframes rotatePhone { 0% { transform: rotate(0deg); } 100% { transform: rotate(-90deg); } }
+
+        @media screen and (max-width: 767px) and (orientation: portrait) {
+            #rotate-warning { display: flex; }
+            .header, .container, footer { display: none !important; }
+        }
+
+        @media screen and (max-width: 850px) {
+            .header { flex-direction: column; gap: 15px; }
+            .nav-buttons { flex-wrap: wrap; justify-content: center; }
+            .interaction-area { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="sfx-correct" src="1.mp3"></audio>
+    <audio id="sfx-wrong" src="2.mp3"></audio>
+    <audio id="sfx-bgm" src="3.mp3" loop></audio>
+    <audio id="sfx-win" src="4.mp3"></audio>
+    <audio id="sfx-lose" src="5.mp3"></audio>
+
+    <div id="rotate-warning">
+        <span>📱</span>
+        <h2>請將手機轉為橫向</h2>
+        <p>為了獲得最佳遊戲體驗，請解鎖畫面旋轉並將設備橫放。</p>
+    </div>
+
+    <header class="header">
+        <div class="logo-area">
+            <div class="logo-img-container">
+                <img src="JESSIEMATH-Q.png" alt="Logo" onerror="this.src='https://via.placeholder.com/50/e67e22/ffffff?text=JM'">
+            </div>
+            <span class="logo-text">Jessie Math</span>
+        </div>
+        <div class="nav-buttons">
+            <a href="https://jessiemath0703-chu.github.io/website2/" class="nav-btn"><i class="fas fa-home"></i> 首頁</a>
+            <a href="https://jessiemath0703-chu.github.io/Game-Lobby/" class="nav-btn"><i class="fas fa-gamepad"></i> 遊戲大廳</a>
+            <a href="https://jessiemath0703-chu.github.io/Game-Lobby/#g6-u5" class="nav-btn active"><i class="fas fa-undo"></i> 六年級小數除法</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <section id="start-screen">
+            <h1>⚙️ 精準油耗計算：迷宮突破 ⚙️</h1>
+            <div class="rules">
+                <h3>📜 任務簡報：</h3>
+                <p>1. 巨大機械門擋住了去路，請為「沙漠探索車」注入精準燃料！</p>
+                <p>2. <strong>防護機制：</strong>若同一題連續答錯 2 次，系統會主動給予正確答案並跳入下一題。</p>
+                <p>3. <strong>豐富題型：</strong>系統可能出現整數除小數、小數除小數等各種變化，請一律求商到整數並找出餘數。</p>
+                <p>4. <strong>過關條件：</strong>挑戰時間為 <strong>90 秒</strong>，時間內<strong>無上限盡情答題</strong>！結算時答對 <strong>5 題以上</strong> (含5題) 即獲頒榮譽徽章！低於 5 題則闖關失敗。</p>
+                <p>5. <strong>操作方式：</strong>計算出正確答案後，點擊含有正確【商與餘數】的燃料匣，再點擊送入油箱。</p>
+            </div>
+            <div class="input-group">
+                <input type="text" id="player-name" placeholder="請輸入你的名字 (特工代號)">
+            </div>
+            <button class="btn" onclick="startGame()">🚀 進入迷宮</button>
+
+            <div class="leaderboard">
+                <h3>🏆 迷宮特工排行榜 (90秒極限挑戰) 🏆</h3>
+                <table>
+                    <thead><tr><th>名次</th><th>名字</th><th>總計答對</th><th>遊玩狀態</th></tr></thead>
+                    <tbody id="lb-body"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="game-screen">
+            <div class="game-header">
+                <div>特工：<span id="display-name" style="color:#f39c12"></span></div>
+                <div>進度：<span id="score">0</span> 題 (目標: 5題)</div>
+                <div>倒數計時：<span id="time" style="color:#e74c3c; font-weight:bold; font-size:22px;">90</span> 秒</div>
+            </div>
+
+            <div class="game-controls">
+                <button class="btn" onclick="toggleSound()" id="sound-btn" style="background:#f39c12"><i class="fas fa-volume-up"></i> 音效開</button>
+                <button class="btn" onclick="togglePause()" style="background:#3498db" id="pause-btn">⏸️ 暫停</button>
+                <button class="btn" onclick="openWhiteboard()" style="background:#9b59b6">📝 透明計算白板</button>
+                <button class="btn" onclick="restartGame()" style="background:#e74c3c">🔄 重新開始</button>
+                <button class="btn" onclick="goToMenu()" style="background:#7f8c8d">🏠 回主選單</button>
+            </div>
+
+            <div class="maze-area">
+                <div class="mission-board" id="question-text">
+                    系統讀取中...
+                </div>
+                
+                <div class="interaction-area">
+                    <div class="fuel-options" id="fuel-container">
+                        </div>
+                    
+                    <div class="vehicle">
+                        <div class="fuel-tank" id="drop-zone" onclick="handleTankClick()">點擊選項<br>再點我注入</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <div class="footer-pill">
+            <div class="footer-left">
+                <div class="footer-dot" aria-hidden="true"></div>
+                <div class="footer-copy">© 2025–2026 Jessie Math 捷析老師. All rights reserved.</div>
+            </div>
+            <div class="footer-right">
+                <div class="footer-icon" aria-hidden="true"><i class="fas fa-compass"></i></div>
+                <div class="footer-tagline">數學不迷路，Jessie帶你走向理解。</div>
+            </div>
+        </div>
+    </footer>
+
+    <div id="whiteboard-modal">
+        <div class="wb-header">
+            <h2 style="color:white; text-shadow: 1px 1px 2px #000;">📝 臨時計算板 (可透視題目)</h2>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn" onclick="clearWhiteboard()" style="padding: 5px 15px; font-size:14px;">🧹 清除</button>
+                <button class="btn" onclick="closeWhiteboard()" style="background:#e74c3c; padding: 5px 15px; font-size:14px;">❌ 關閉</button>
+            </div>
+        </div>
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <div id="badge-modal">
+        <h1 style="color:#f1c40f; margin-bottom: 20px;" id="badge-title">🎉 任務完成！挑戰成功！ 🎉</h1>
+        <img src="G6-U5.jpg" alt="過關徽章" class="badge-img" onerror="this.src='https://via.placeholder.com/300/f39c12/fff?text=G6-U5+Badge'">
+        <h2 style="color:white; margin-top: 20px;" id="final-stats"></h2>
+        <button class="btn" onclick="goToMenu()" style="margin-top: 30px;">返回首頁看排行榜</button>
+    </div>
+
+<script>
+    // --- 遊戲狀態 ---
+    let playerName = "";
+    let score = 0;
+    let targetScore = 5;
+    let timeLeft = 90;
+    let timer;
+    let isPaused = false;
+    let currentAnswerStr = "";
+    let draggedValue = null;
+    let lastQuestionKey = ""; 
+    let wrongAttempts = 0;
+
+    // --- 音效管理系統 ---
+    const bgm = document.getElementById('sfx-bgm');
+    const sfxCorrect = document.getElementById('sfx-correct');
+    const sfxWrong = document.getElementById('sfx-wrong');
+    const sfxWin = document.getElementById('sfx-win');
+    const sfxLose = document.getElementById('sfx-lose');
+    let sfxTimeout = null;
+    
+    // 🔥 靜音變數 🔥
+    let isMuted = false;
+
+    // 音效開關控制
+    function toggleSound() {
+        isMuted = !isMuted;
+        const soundBtn = document.getElementById('sound-btn');
+        if (isMuted) {
+            soundBtn.innerHTML = '<i class="fas fa-volume-mute"></i> 音效關';
+            soundBtn.style.background = '#7f8c8d';
+            stopBGM();
+            stopAllSFX();
+        } else {
+            soundBtn.innerHTML = '<i class="fas fa-volume-up"></i> 音效開';
+            soundBtn.style.background = '#f39c12';
+            if (!isPaused && document.getElementById('game-screen').style.display === 'block') {
+                playBGM();
+            }
+        }
+    }
+
+    function stopAllSFX() {
+        sfxCorrect.pause(); sfxCorrect.currentTime = 0;
+        sfxWrong.pause(); sfxWrong.currentTime = 0;
+        sfxWin.pause(); sfxWin.currentTime = 0;
+        sfxLose.pause(); sfxLose.currentTime = 0;
+        if(sfxTimeout) clearTimeout(sfxTimeout);
+    }
+
+    function playAudio(audioObj, limit3Sec = false) {
+        if (isMuted) return; // 靜音狀態不播放
+        stopAllSFX(); 
+        audioObj.play().catch(e => console.log("Audio play blocked by browser:", e));
+        
+        if (limit3Sec) {
+            sfxTimeout = setTimeout(() => {
+                audioObj.pause();
+                audioObj.currentTime = 0;
+            }, 3000);
+        }
+    }
+
+    function playBGM() {
+        if (isMuted) return; // 靜音狀態不播放
+        bgm.play().catch(e => console.log("BGM play blocked:", e));
+    }
+
+    function stopBGM() {
+        bgm.pause();
+        bgm.currentTime = 0;
+    }
+
+    // --- 排行榜讀取 ---
+    function loadLeaderboard() {
+        let lb = JSON.parse(localStorage.getItem('jessieMazeLeaderboardV8')) || [];
+        lb.sort((a, b) => b.score - a.score); 
+        const tbody = document.getElementById('lb-body');
+        tbody.innerHTML = '';
+        lb.slice(0, 5).forEach((entry, index) => {
+            let status = entry.score >= 5 ? "🎖️ 挑戰成功" : "💀 挑戰失敗";
+            tbody.innerHTML += `<tr><td>${index + 1}</td><td>${entry.name}</td><td>${entry.score} 題</td><td>${status}</td></tr>`;
+        });
+    }
+    loadLeaderboard();
+
+    // --- 遊戲流程控制 ---
+    function startGame() {
+        playerName = document.getElementById('player-name').value.trim();
+        if (!playerName) { alert("請輸入你的特工代號（名字）！"); return; }
+        
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('game-screen').style.display = 'block';
+        document.getElementById('display-name').innerText = playerName;
+        
+        score = 0;
+        timeLeft = 90;
+        isPaused = false;
+        lastQuestionKey = "";
+        document.getElementById('score').innerText = score;
+        document.getElementById('time').innerText = timeLeft;
+        document.getElementById('pause-btn').innerHTML = "⏸️ 暫停";
+        document.getElementById('fuel-container').style.pointerEvents = "auto";
+        
+        playBGM(); 
+        generateQuestion();
+        clearInterval(timer);
+        startTimer();
+    }
+
+    function startTimer() {
+        timer = setInterval(() => {
+            if (!isPaused) {
+                timeLeft--;
+                document.getElementById('time').innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    stopBGM(); 
+                    if (score >= targetScore) {
+                        gameWin(); 
+                    } else {
+                        gameLose(); 
+                    }
+                }
+            }
+        }, 1000);
+    }
+
+    function togglePause() {
+        isPaused = !isPaused;
+        document.getElementById('pause-btn').innerHTML = isPaused ? "▶️ 繼續" : "⏸️ 暫停";
+        document.getElementById('fuel-container').style.pointerEvents = isPaused ? "none" : "auto";
+        if (isPaused) {
+            bgm.pause();
+        } else {
+            playBGM();
+        }
+    }
+
+    function restartGame() {
+        clearInterval(timer);
+        stopAllSFX();
+        startGame();
+    }
+
+    function goToMenu() {
+        clearInterval(timer);
+        stopAllSFX();
+        stopBGM();
+        document.getElementById('game-screen').style.display = 'none';
+        document.getElementById('badge-modal').style.display = 'none';
+        document.getElementById('start-screen').style.display = 'block';
+        loadLeaderboard();
+    }
+
+    function saveScore() {
+        let lb = JSON.parse(localStorage.getItem('jessieMazeLeaderboardV8')) || [];
+        lb.push({ name: playerName, score: score });
+        localStorage.setItem('jessieMazeLeaderboardV8', JSON.stringify(lb));
+    }
+
+    function gameWin() {
+        saveScore();
+        playAudio(sfxWin, false); 
+        document.getElementById('badge-title').innerText = "🎉 任務完成！挑戰成功！ 🎉";
+        document.getElementById('badge-title').style.color = "#f1c40f";
+        document.getElementById('final-stats').innerText = `結算：總共答對 ${score} 題！`;
+        document.getElementById('badge-modal').style.display = 'flex';
+    }
+
+    function gameLose() {
+        saveScore();
+        playAudio(sfxLose, false); 
+        document.getElementById('badge-title').innerText = "💀 任務失敗！燃料耗盡！ 💀";
+        document.getElementById('badge-title').style.color = "#e74c3c";
+        document.getElementById('final-stats').innerText = `結算：只答對 ${score} 題 (未達 5 題標準)`;
+        document.getElementById('badge-modal').style.display = 'flex';
+    }
+
+    // --- 動態題庫 (多種類洗牌) ---
+    function generateQuestion() {
+        draggedValue = null;
+        wrongAttempts = 0; 
+        
+        let typeRand = Math.floor(Math.random() * 4); 
+        let qText = "";
+        let optionsArr = [];
+        
+        let divisor, dividend, typeRandName;
+        let currentQuestionKey = "";
+
+        // 防重複機制
+        do {
+            if (typeRand === 0) {
+                divisor = (Math.floor(Math.random() * 89) + 11) / 10; 
+                dividend = Math.floor(Math.random() * 900) + 100;
+                typeRandName = "整數 ÷ 一位小數";
+            } else if (typeRand === 1) {
+                divisor = (Math.floor(Math.random() * 89) + 11) / 10;
+                dividend = (Math.floor(Math.random() * 900) + 100) / 10;
+                typeRandName = "一位小數 ÷ 一位小數";
+            } else if (typeRand === 2) {
+                divisor = (Math.floor(Math.random() * 89) + 11) / 10;
+                dividend = (Math.floor(Math.random() * 9000) + 1000) / 100;
+                typeRandName = "兩位小數 ÷ 一位小數";
+            } else {
+                divisor = (Math.floor(Math.random() * 89) + 11) / 100; 
+                dividend = (Math.floor(Math.random() * 900) + 100) / 10;
+                typeRandName = "一位小數 ÷ 兩位小數";
+            }
+            currentQuestionKey = `${divisor}_${dividend}_${typeRand}`;
+        } while (currentQuestionKey === lastQuestionKey);
+        
+        lastQuestionKey = currentQuestionKey;
+
+        let quotient = Math.floor(dividend / divisor);
+        let remainder = Math.round((dividend - quotient * divisor) * 100) / 100;
+
+        if (remainder === 0) {
+            remainder = Math.round(divisor * 0.5 * 100) / 100;
+            if(remainder === 0) remainder = 0.1;
+            dividend = Math.round((quotient * divisor + remainder) * 100) / 100;
+        }
+
+        currentAnswerStr = `商: ${quotient}\n餘: ${remainder}`;
+
+        let wrongQ = Math.floor(quotient * 10);
+        if(wrongQ === quotient) wrongQ = quotient + 1;
+        let wrongR = Math.round(remainder * 10 * 100) / 100;
+        if(wrongR === remainder) wrongR = Math.round((remainder + 0.1) * 100) / 100;
+
+        qText = buildMathTable(divisor, dividend, wrongQ, wrongR, `⚠️ 系統異常：${typeRandName} (求商到整數)<br><span style='font-size:14px; color:#f39c12;'>請找出正確的商與餘數！</span>`);
+
+        optionsArr.push(currentAnswerStr); 
+        optionsArr.push(`商: ${quotient}\n餘: ${wrongR}`); 
+        optionsArr.push(`商: ${wrongQ}\n餘: ${wrongR}`); 
+        optionsArr.push(`商: ${wrongQ}\n餘: ${remainder}`); 
+
+        document.getElementById('question-text').innerHTML = qText;
+
+        optionsArr = [...new Set(optionsArr)];
+        optionsArr.sort(() => Math.random() - 0.5); 
+
+        const container = document.getElementById('fuel-container');
+        container.innerHTML = '';
+        container.style.pointerEvents = "auto"; 
+        
+        optionsArr.forEach(opt => {
+            let div = document.createElement('div');
+            div.className = 'fuel-cell';
+            div.draggable = true;
+            div.innerHTML = opt.replace('\n', '<br>');
+            div.dataset.value = opt; 
+            
+            div.addEventListener('dragstart', (e) => {
+                draggedValue = e.target.dataset.value || e.target.closest('.fuel-cell').dataset.value;
+                document.querySelectorAll('.fuel-cell').forEach(el => el.classList.remove('selected'));
+                e.target.closest('.fuel-cell').classList.add('selected');
+            });
+            
+            div.addEventListener('click', (e) => {
+                draggedValue = e.target.dataset.value || e.target.closest('.fuel-cell').dataset.value;
+                document.querySelectorAll('.fuel-cell').forEach(el => el.classList.remove('selected'));
+                e.target.closest('.fuel-cell').classList.add('selected');
+                document.getElementById('drop-zone').innerHTML = "點我注入!";
+                document.getElementById('drop-zone').style.background = "#e67e22";
+            });
+            
+            container.appendChild(div);
+        });
+    }
+
+    // --- HTML Table 直式排版產生器 ---
+    function buildMathTable(divisor, dividend, wrongQ, wrongR, msgTitle) {
+        return `<div style="text-align:center; margin-bottom:10px; font-weight:bold; color:#0f0;">${msgTitle}</div>
+        <div class="vertical-math-container">
+            <table class="math-table">
+                <tr>
+                    <td></td>
+                    <td class="math-q"><span class="wrong-text">${wrongQ}</span></td>
+                </tr>
+                <tr>
+                    <td class="math-divisor">${divisor}</td>
+                    <td class="math-dividend">${dividend}</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td class="math-dots">...</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td class="math-r"><span class="wrong-text">${wrongR}</span></td>
+                </tr>
+            </table>
+        </div>`;
+    }
+
+    // --- 互動判斷 (錯2次給答案機制) ---
+    const dropZone = document.getElementById('drop-zone');
+    
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('drag-over'); });
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+        checkAnswer();
+    });
+
+    function handleTankClick() {
+        if (draggedValue !== null) checkAnswer();
+    }
+
+    function checkAnswer() {
+        if (draggedValue === currentAnswerStr) {
+            score++;
+            document.getElementById('score').innerText = score;
+            dropZone.innerText = "注入成功!";
+            dropZone.style.background = "#2ecc71";
+            playAudio(sfxCorrect, true); 
+
+            setTimeout(() => {
+                resetDropZone();
+                generateQuestion(); 
+            }, 600);
+        } else {
+            wrongAttempts++;
+            playAudio(sfxWrong, true); 
+
+            if (wrongAttempts >= 2) {
+                // 連錯兩次：超明顯解答 UI
+                dropZone.innerHTML = "連續錯誤!<br>跳下一題";
+                dropZone.style.background = "#c0392b";
+                
+                document.getElementById('fuel-container').style.pointerEvents = "none";
+                document.getElementById('question-text').innerHTML = `
+                    <div style="background:rgba(231, 76, 60, 0.2); padding: 15px; border-radius: 10px; border: 2px solid #e74c3c; width: 100%;">
+                        <div style="text-align:center; margin-bottom:15px; font-weight:bold; color:#e74c3c; font-size:26px;">❌ 連續答錯兩次！</div>
+                        <div style="text-align:center; font-size: 22px; color:#fff;">正確答案為：<br><br>
+                            <span style="background:#000; padding:10px 30px; border-radius:8px; display:inline-block; border: 3px solid #2ecc71; color: #2ecc71; font-weight: bold; letter-spacing: 2px;">
+                                ${currentAnswerStr.replace('\n', '<br>')}
+                            </span>
+                        </div>
+                        <div style="text-align:center; margin-top:20px; font-size:16px; color:#f1c40f; animation: pulse 1s infinite;">⏳ 3秒後進入下一題...</div>
+                    </div>
+                    <style>@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }</style>
+                `;
+                
+                setTimeout(() => {
+                    resetDropZone();
+                    generateQuestion(); 
+                }, 3000);
+
+            } else {
+                dropZone.innerText = "燃料錯誤!";
+                dropZone.style.background = "#e74c3c";
+                setTimeout(() => resetDropZone(), 600);
+            }
+        }
+    }
+
+    function resetDropZone() {
+        dropZone.innerHTML = "點擊選項<br>再點我注入";
+        dropZone.style.background = "#34495e";
+        draggedValue = null;
+        document.querySelectorAll('.fuel-cell').forEach(el => el.classList.remove('selected'));
+    }
+
+    // --- 透明計算白板邏輯 ---
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let painting = false;
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth * 0.9;
+        canvas.height = window.innerHeight * 0.65;
+        if(canvas.width > 800) canvas.width = 800;
+    }
+
+    function startPosition(e) { painting = true; draw(e); }
+    function endPosition() { painting = false; ctx.beginPath(); }
+    function draw(e) {
+        if (!painting) return;
+        
+        let clientX, clientY;
+        if (e.type.includes('touch')) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+
+        const rect = canvas.getBoundingClientRect();
+        ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.strokeStyle = '#ffffff'; 
+        
+        ctx.lineTo(clientX - rect.left, clientY - rect.top);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(clientX - rect.left, clientY - rect.top);
+    }
+    
+    canvas.addEventListener('mousedown', startPosition);
+    canvas.addEventListener('mouseup', endPosition);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startPosition(e); }, {passive: false});
+    canvas.addEventListener('touchend', endPosition);
+    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); }, {passive: false});
+
+    window.addEventListener('resize', () => {
+        if (document.getElementById('whiteboard-modal').style.display === 'flex') resizeCanvas();
+    });
+
+    function openWhiteboard() { 
+        document.getElementById('whiteboard-modal').style.display = 'flex'; 
+        resizeCanvas();
+    }
+    function closeWhiteboard() { document.getElementById('whiteboard-modal').style.display = 'none'; }
+    function clearWhiteboard() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
+</script>
+</body>
+</html>
